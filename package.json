@@ -1,6 +1,6 @@
 {
   "name": "@h1/native-butler",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "build": 12,
   "description": "Set of scripts that speed up development of React Native apps.",
   "main": "run.js",
