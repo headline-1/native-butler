@@ -9,28 +9,28 @@ const replacePlistValue = (plistString: string, key: string, value: string | num
   );
 
 const setPlistVersion = async (plistPath: string, version: number, displayableVersion: string) => {
-  let file = readFile(plistPath);
+  let file = await readFile(plistPath);
   file = replacePlistValue(file, 'CFBundleVersion', version);
   file = replacePlistValue(file, 'CFBundleShortVersionString', displayableVersion);
   await writeFile(plistPath, file);
 };
 
 const setBuildGradleVersion = async (buildGradlePath: string, version: number, displayableVersion: string) => {
-  let file = readFile(buildGradlePath);
+  let file = await readFile(buildGradlePath);
   file = file.replace(/(versionCode\s).+(\n)/, `$1${version}$2`);
   file = file.replace(/(versionName\s).+(\n)/, `$1"${displayableVersion}"$2`);
   await writeFile(buildGradlePath, file);
 };
 
 const setPackageJsonVersion = async (packageJsonPath: string, buildNumber: number, versionString: string) => {
-  const file = JSON.parse(readFile(packageJsonPath));
+  const file = JSON.parse(await readFile(packageJsonPath));
   file.build = buildNumber;
   file.version = versionString;
   await writeFile(packageJsonPath, JSON.stringify(file, null, 2) + '\n');
 };
 
 const setConfigVersion = async (configPath: string, version: number, displayableVersion: string) => {
-  const file = JSON.parse(readFile(configPath));
+  const file = JSON.parse(await readFile(configPath));
   file.DISPLAYABLE_VERSION = displayableVersion;
   file.VERSION = version;
   await writeFile(configPath, JSON.stringify(file, null, 2) + '\n');

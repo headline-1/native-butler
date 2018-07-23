@@ -67,7 +67,7 @@ export const build = createCommand(
       throw new Error(`build: command ${JSON.stringify(command)} has unsupported type of ${typeof command}`);
     };
 
-    const type = config.branches[branch] || config.branches['!default'];
+    const type = (isPR === 'true' && config.branches[branch]) || config.branches['!default'];
     const commands = processCommands(config.commands[type] || config.commands['!default']);
     const environment = {
       PLATFORM: platform,

@@ -1,4 +1,6 @@
 const path = require('path');
+const nodeExternals = require('webpack-node-externals');
+
 
 const outputPath = path.resolve('./dist');
 
@@ -31,5 +33,6 @@ module.exports = {
         },
       }
     ]
-  }
+  },
+  externals: [nodeExternals()],
 };

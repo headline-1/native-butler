@@ -1,6 +1,6 @@
+import { copy as cpx } from 'cpx';
 import * as fs from 'fs';
 import globCallback from 'glob';
-import * as cp from 'glob-copy';
 import mkdirp from 'mkdirp';
 import rimraf from 'rimraf';
 import { promisify } from 'util';
@@ -13,7 +13,7 @@ const unlink = promisify(fs.unlink);
 export const exists = promisify(fs.exists);
 export const remove = promisify(rimraf);
 export const glob = promisify(globCallback);
-export const copy = promisify(cp);
+export const copy = promisify(cpx);
 
 export const readFile = (file: string, format = 'utf8') => read(file, format);
 

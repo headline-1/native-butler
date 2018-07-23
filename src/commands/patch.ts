@@ -1,6 +1,6 @@
 import { createCommand } from '../command';
 import { assertProperty } from '../utils/args';
-import { copy, exists, glob, readFile, remove, writeFile } from '../utils/file';
+import { copy, copyFile, exists, glob, readFile, remove, writeFile } from '../utils/file';
 
 interface AndroidPatchOptions {
   compileSdkVersion: number;
@@ -84,7 +84,11 @@ export const patch = createCommand(
             'refer to directories above current working directory level: ' + JSON.stringify(file));
         }
         console.log(`Copy: ${file.from} to ${file.to}`);
-        await copy(file.from, file.to);
+        if (file.file) {
+          await copyFile(file.from, file.to);
+        } else {
+          await copy(file.from, file.to);
+        }
       }
     }
 
