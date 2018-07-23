@@ -1,19 +1,20 @@
 import * as fs from 'fs';
 import globCallback from 'glob';
 import mkdirp from 'mkdirp';
-import { ncp } from 'ncp';
+import { ncp as ncpCallback } from 'ncp';
 import rimraf from 'rimraf';
 import { promisify } from 'util';
 
-export const exists = promisify(fs.exists);
-export const remove = promisify(rimraf);
-export const glob = promisify(globCallback);
-export const copy = promisify(ncp);
-
+const ncp = promisify(ncpCallback);
 const rename = promisify(fs.rename);
 const read = promisify(fs.readFile);
 const write = promisify(fs.writeFile);
 const unlink = promisify(fs.unlink);
+
+export const exists = promisify(fs.exists);
+export const remove = promisify(rimraf);
+export const glob = promisify(globCallback);
+export const copy = async (from: string, to: string) => ncp(await glob(from), to);
 
 export const readFile = (file: string, format = 'utf8') => read(file, format);
 

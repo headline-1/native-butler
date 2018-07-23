@@ -83,13 +83,13 @@ export const version = createCommand(
     const reflect = async () => {
       if (!config.files || !config.files.length) {
         return console.log(
-          'version.files in .butler.json is not specified or empty; ' +
+          'version: files field is not specified or empty; ' +
           'put the paths to your project files (i.e. ./android/app/build.gradle) inside'
         );
       }
-      if (config.files.filter((file: string) => !file.match(/\.(plist|gradle|json)$/))) {
+      if (config.files.find((file: string) => !file.match(/\.(plist|gradle|json)$/))) {
         return console.log(
-          'version.files in .butler.json contain a path with invalid extension; ' +
+          'version: files contain a path with invalid extension; ' +
           'only gradle, plist and json are supported'
         );
       }
@@ -104,7 +104,7 @@ export const version = createCommand(
         if (path.endsWith('.json')) {
           return setConfigVersion(path, build, version);
         }
-        return Promise.reject(new Error(`Unsupported file extension: ${path}`));
+        return Promise.reject(new Error(`version: unsupported file extension: ${path}`));
       }));
     };
 

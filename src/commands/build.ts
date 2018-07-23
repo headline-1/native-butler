@@ -69,8 +69,19 @@ export const build = createCommand(
 
     const type = config.branches[branch] || config.branches['!default'];
     const commands = processCommands(config.commands[type] || config.commands['!default']);
+    const environment = {
+      PLATFORM: platform,
+      BRANCH: branch,
+      IS_PR: isPR,
+    };
 
     const executeCommand = (command: string): Promise<void> => new Promise((resolve, reject) => {
+      for (const key in environment) {
+        if (environment.hasOwnProperty(key)) {
+          command = command.replace(new RegExp(`{${key}}`, 'g'), environment[key]);
+        }
+      }
+
       const child = spawn(command);
 
       child.stdout.on('data', data => console.log(data));

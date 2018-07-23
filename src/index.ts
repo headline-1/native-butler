@@ -19,7 +19,6 @@ const COMMANDS = [
 ];
 
 const run = async () => {
-  console.log(process.argv);
   const command = process.argv[2];
   if (!command) {
     console.log(

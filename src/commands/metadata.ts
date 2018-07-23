@@ -1,5 +1,6 @@
 import * as path from 'path';
 import { createCommand } from '../command';
+import { assertProperty } from '../utils/args';
 import { makeDir, readFile, writeFile } from '../utils/file';
 
 const setFile = (key: string, value: string) => writeFile(path.resolve(key), value);
@@ -37,16 +38,15 @@ const setMultiple = (obj: object, keys: string[], value: string) =>
 export const metadata = createCommand(
   'metadata',
   {
-    sourceJson: undefined,
-    metadataRoot: undefined,
+    source: undefined,
+    metadataPath: undefined,
   },
   async ({ config }) => {
-    const { sourceJson, metadataRoot } = config;
-    if (!sourceJson || !metadataRoot) {
-      console.log('Missing --src or --meta argument. Both source json file and output directory are required`');
-      process.exit(1);
-    }
-    const metadata = JSON.parse(await readFile(sourceJson));
+    const { source, metadataPath } = config;
+    assertProperty(config, 'source', 'string');
+    assertProperty(config, 'metadataPath', 'string');
+
+    const metadata = JSON.parse(await readFile(source));
     if (metadata.common) {
       for (const language in metadata.common) {
         if (!metadata.common.hasOwnProperty(language)) {
@@ -81,6 +81,6 @@ export const metadata = createCommand(
       }
     }
     delete metadata.common;
-    await parseObject(metadata, metadataRoot);
+    await parseObject(metadata, metadataPath);
   }
 );

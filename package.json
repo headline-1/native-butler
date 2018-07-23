@@ -1,7 +1,7 @@
 {
   "name": "@h1/native-butler",
-  "version": "0.0.1",
-  "build": 1,
+  "version": "0.0.2",
+  "build": 2,
   "description": "Set of scripts that speed up development of React Native apps.",
   "main": "run.js",
   "repository": "git@github.com:headline-1/native-butler.git",
@@ -13,7 +13,8 @@
     "clean": "rimraf {dist,.jest,report}",
     "lint": "mkdir -p reports && tslint './src/**/*.{js,ts}' --project ./ --format json --out './reports/lint.json' || tslint './src/**/*.{js,ts}' --project ./ --format stylish",
     "start": "node dist/index.js",
-    "test": "jest --config='./jest.config.json' --json --outputFile='./reports/test.json' --testLocationInResults --coverage --detectOpenHandles"
+    "test": "jest --config='./jest.config.json' --json --outputFile='./reports/test.json' --testLocationInResults --coverage --detectOpenHandles",
+    "prepublish": "yarn build"
   },
   "bin": {
     "native-butler": "./run.js",
@@ -34,16 +35,16 @@
     "eslint": "^5.2.0",
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-plugin-import": "^2.13.0",
+    "glob": "^7.1.2",
     "jest": "^23.4.1",
     "ncp": "^2.0.0",
+    "rimraf": "^2.6.2",
     "ts-jest": "^23.0.1",
     "ts-loader": "^4.4.2",
     "tslint": "^5.11.0",
     "tslint-config-airbnb-base": "^0.2.0",
     "typescript": "^2.9.2",
     "webpack": "^4.16.1",
-    "rimraf": "^2.6.2",
-    "glob": "^7.1.2",
     "webpack-cli": "^3.1.0"
   }
 }
