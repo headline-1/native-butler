@@ -82,10 +82,10 @@ export const build = createCommand(
         }
       }
 
-      const child = spawn(command);
-
-      child.stdout.on('data', data => console.log(data));
-      child.stderr.on('data', data => console.log(data));
+      const [commandName, ...args] = command.split(' ');
+      const child = spawn(commandName, args);
+      child.stdout.pipe(process.stdout);
+      child.stderr.pipe(process.stderr);
 
       child.on('close', (code) => {
         if (code === 0) {
