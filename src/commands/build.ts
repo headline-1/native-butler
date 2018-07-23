@@ -50,7 +50,7 @@ export const build = createCommand(
           `you probably have a circular dependency in your command chain.`
         );
       }
-      if (command === 'string') {
+      if (typeof command === 'string') {
         if (command[0] === '!' && config.commands[command]) {
           return [...processCommands(config.commands[command], depth + 1)];
         }
