@@ -1,6 +1,6 @@
 {
   "name": "@h1/native-butler",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "build": 6,
   "description": "Set of scripts that speed up development of React Native apps.",
   "main": "run.js",
@@ -47,6 +47,7 @@
   "dependencies": {
     "cpx": "^1.5.0",
     "glob": "^7.1.2",
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "webpack-node-externals": "^1.7.2"
   }
 }
