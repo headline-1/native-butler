@@ -1,0 +1,3 @@
+structure:
+  readme: ./docs/quick-start.md
+  summary: ./docs/summary.md

@@ -1,0 +1,10 @@
+build/
+node_modules/
+reports/
+src/
+types/
+.*
+tsconfig.json
+jest.config.json
+tslint.json
+*.log

@@ -1,0 +1,27 @@
+language: node_js
+sudo: false
+env:
+- NODE_ENV=test
+before_install:
+- nvm install
+- travis_retry npm install -g yarn
+- node --version
+cache:
+  yarn: true
+install:
+- travis_retry yarn install
+script:
+- yarn lint
+- yarn test
+- yarn build
+branches:
+  only:
+  - develop
+  - master
+deploy:
+  provider: npm
+  skip_cleanup: true
+  email: krzysiekmie@gmail.com
+  api_key: $NPM_API_KEY
+  on:
+    branch: master

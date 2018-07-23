@@ -1,0 +1,33 @@
+{
+  "actions": [
+    {
+      "name": "packageVersion",
+      "file": "package.json"
+    },
+    {
+      "name": "changelog",
+      "file": "CHANGELOG.md"
+    },
+    {
+      "name": "lint",
+      "header": "Lint",
+      "file": "./reports/lint.json"
+    },
+    {
+      "name": "jest",
+      "header": "Tests",
+      "file": "./reports/test.json"
+    },
+    {
+      "name": "coverage",
+      "file": "./reports/coverage/coverage-final.json",
+      "errorThreshold": 0
+    },
+    {
+      "name": "githubComment",
+      "oneCommentPerCommit": true,
+      "removalPolicy": "always"
+    },
+    "stdout"
+  ]
+}

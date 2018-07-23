@@ -1,0 +1,8 @@
+/node_modules/
+/.idea/
+/.vscode/
+/build/
+/dist/
+/yarn-error.log
+/reports/
+/.jest
