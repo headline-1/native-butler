@@ -15,10 +15,7 @@ export const build = createCommand(
       staging: 'staging',
       develop: 'development',
     },
-    commands: {
-      '!always': 'yarn fastlane {PLATFORM} test',
-      '!default': 'yarn fastlane {PLATFORM} {BUILD_TYPE}',
-    },
+    commands: {},
   },
   async ({ commandParams, config, args }) => {
     const isPR = args['pull-request'];
@@ -58,8 +55,9 @@ export const build = createCommand(
         );
       }
       if (typeof command === 'string') {
-        if (command[0] === '!' && config.commands[command]) {
-          return [...processCommands(config.commands[command], depth + 1)];
+        if (command[0] === '!') {
+          const foundCommand = config.commands[command.substring(1)];
+          return [...processCommands(foundCommand, depth + 1)];
         }
         return [command];
       }
