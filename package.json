@@ -1,6 +1,6 @@
 {
   "name": "@h1/native-butler",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "build": 12,
   "description": "Set of scripts that speed up development of React Native apps.",
   "main": "run.js",
@@ -22,6 +22,7 @@
     "nb": "./run.js"
   },
   "devDependencies": {
+    "@types/chalk": "^2.2.0",
     "@types/jest": "^23.3.0",
     "@types/mkdirp": "^0.5.2",
     "@types/node": "^10.5.2",
@@ -45,6 +46,7 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
+    "chalk": "^2.4.1",
     "cpx": "^1.5.0",
     "glob": "^7.1.2",
     "rimraf": "^2.6.2",
