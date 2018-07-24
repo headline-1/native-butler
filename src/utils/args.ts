@@ -1,7 +1,6 @@
-export type Args = Record<string, string>;
+import { ButlerError } from './butler-error';
 
-export const parseCommand = (argv: string[]): string[] => argv[2]
-  .split(':');
+export type Args = Record<string, string>;
 
 export const parseArgs = (argv: string[]): Args => argv
   .map(arg => arg.match(/^--(.+?)(?:=(.+))?$/))
@@ -21,9 +20,9 @@ export const assertProperty = (config: any, key: string, validator: string | Reg
   const regex = typeof validator === 'string' ? undefined : validator;
 
   if ((Array.isArray(value) ? `${typeof value[0]}[]` : typeof value) !== type) {
-    throw new Error(`${key} should be a ${type}, but is ${typeof value}`);
+    throw new ButlerError('validation', `${key} should be a ${type}, but is ${typeof value}`, config);
   }
   if (regex && !value.match(regex)) {
-    throw new Error(`${key} should match ${type}, but it equals to ${value}`);
+    throw new ButlerError('validation', `${key} should match ${type}, but it equals to ${value}`, config);
   }
 };

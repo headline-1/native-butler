@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { build } from './commands/build';
 import { changelog } from './commands/changelog';
 import { dotEnv } from './commands/dotenv';
@@ -7,6 +8,7 @@ import { patch } from './commands/patch';
 import { version } from './commands/version';
 import { readConfig } from './config';
 import { parseArgs } from './utils/args';
+import { ButlerError } from './utils/butler-error';
 
 const COMMANDS = [
   build,
@@ -32,13 +34,22 @@ const run = async () => {
 
   for (const command of COMMANDS) {
     if (command.name === commandName) {
-      await command.exec({
-        commandParams,
-        args: parseArgs(process.argv),
-        config: config[commandName]
-          ? { ...command.defaultConfig, ...config[commandName] }
-          : command.defaultConfig,
-      });
+      try {
+        await command.exec({
+          commandParams,
+          args: parseArgs(process.argv),
+          config: config[commandName]
+            ? { ...command.defaultConfig, ...config[commandName] }
+            : command.defaultConfig,
+        });
+      } catch (error) {
+        if (error instanceof ButlerError) {
+          console.log(chalk.red(chalk.bold(error.command) + ': ' + error.message));
+          if (error.details) {
+            console.log(chalk.bold.magenta('details:\n') + JSON.stringify(error.details));
+          }
+        }
+      }
     }
   }
 };
