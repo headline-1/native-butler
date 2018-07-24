@@ -14,7 +14,7 @@
     "json"
   ],
   "setupFiles": [
-    "./src/specs/setup.ts"
+    "./src/spec/setup.ts"
   ],
   "collectCoverageFrom": [
     "src/**/*.{ts}"
