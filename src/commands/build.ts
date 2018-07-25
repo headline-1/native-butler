@@ -1,7 +1,8 @@
 import chalk from 'chalk';
-import { spawn } from 'child_process';
 import { createCommand } from '../command';
+import { replaceVariables } from '../utils/args';
 import { ButlerError } from '../utils/butler-error';
+import { execAndLog } from '../utils/execute';
 
 const MAX_COMMAND_DEPTH = 32;
 const TAG = 'build';
@@ -85,27 +86,16 @@ export const build = createCommand(
       IS_PR: isPR,
     };
 
-    const executeCommand = (command: string): Promise<void> => new Promise((resolve, reject) => {
-      for (const key in environment) {
-        if (environment.hasOwnProperty(key)) {
-          command = command.replace(new RegExp(`{${key}}`, 'g'), environment[key]);
-        }
-      }
+    const executeCommand = async (command: string) => {
+      command = replaceVariables(command, environment);
       console.log(chalk.bold.magenta('build: ' + command));
 
-      const [commandName, ...args] = command.split(' ');
-      const child = spawn(commandName, args);
-      child.stdout.pipe(process.stdout);
-      child.stderr.pipe(process.stderr);
-
-      child.on('close', (code) => {
-        if (code === 0) {
-          resolve();
-        } else {
-          reject(new ButlerError(TAG, `child process exited with code ${code}`, { command }));
-        }
-      });
-    });
+      try {
+        await execAndLog(command);
+      } catch (error) {
+        throw new ButlerError(TAG, error.message, { command });
+      }
+    };
 
     for (const command of commands) {
       await executeCommand(command);

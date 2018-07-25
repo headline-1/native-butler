@@ -1,30 +1,16 @@
+import 'source-map-support/register';
+
 import chalk from 'chalk';
-import { build } from './commands/build';
-import { changelog } from './commands/changelog';
-import { dotEnv } from './commands/dotenv';
-import { keys } from './commands/keys';
-import { metadata } from './commands/metadata';
-import { patch } from './commands/patch';
-import { version } from './commands/version';
+import { Commands } from './commands';
 import { readConfig } from './config';
 import { parseArgs } from './utils/args';
 import { ButlerError } from './utils/butler-error';
-
-const COMMANDS = [
-  build,
-  changelog,
-  dotEnv,
-  keys,
-  metadata,
-  patch,
-  version,
-];
 
 const run = async () => {
   const command = process.argv[2];
   if (!command) {
     console.log(
-      'Please specify command to execute. Supported commands: ' + COMMANDS.map(cmd => cmd.name).join(', ')
+      'Please specify command to execute. Supported commands: ' + Commands.map(cmd => cmd.name).join(', ')
     );
     process.exit(1);
   }
@@ -32,7 +18,7 @@ const run = async () => {
   const commandName = commandParams.shift();
   const config = await readConfig();
 
-  for (const command of COMMANDS) {
+  for (const command of Commands) {
     if (command.name === commandName) {
       try {
         await command.exec({
@@ -48,6 +34,8 @@ const run = async () => {
           if (error.details) {
             console.log(chalk.bold.magenta('details:\n') + JSON.stringify(error.details));
           }
+        } else {
+          throw error;
         }
       }
     }

@@ -26,3 +26,12 @@ export const assertProperty = (config: any, key: string, validator: string | Reg
     throw new ButlerError('validation', `${key} should match ${type}, but it equals to ${value}`, config);
   }
 };
+
+export const replaceVariables = (text: string, variables: Record<string, string>): string => {
+  for (const key in variables) {
+    if (variables.hasOwnProperty(key)) {
+      text = text.replace(new RegExp(`{${key}}`, 'g'), variables[key]);
+    }
+  }
+  return text;
+};
