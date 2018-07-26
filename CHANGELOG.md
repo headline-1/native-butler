@@ -1,3 +1,8 @@
+# 0.1.3
+
+* [FIX] Return proper error code if something goes wrong
+* [FIX] Handle invalid commands (return 1 and propose correct ones) 
+
 # 0.1.2
 
 * [FIX] Build script fix - PR=false flag should trigger proper deployment builds now (instead of doing the opposite)

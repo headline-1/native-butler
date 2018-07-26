@@ -9,9 +9,7 @@ import { ButlerError } from './utils/butler-error';
 const run = async () => {
   const command = process.argv[2];
   if (!command) {
-    console.log(
-      'Please specify command to execute. Supported commands: ' + Commands.map(cmd => cmd.name).join(', ')
-    );
+    console.log('Please specify command to execute. Supported commands: ' + Commands.map(cmd => cmd.name).join(', '));
     process.exit(1);
   }
   const commandParams = command.split(':');
@@ -21,7 +19,7 @@ const run = async () => {
   for (const command of Commands) {
     if (command.name === commandName) {
       try {
-        await command.exec({
+        return await command.exec({
           commandParams,
           args: parseArgs(process.argv),
           config: config[commandName]
@@ -34,12 +32,15 @@ const run = async () => {
           if (error.details) {
             console.log(chalk.bold.magenta('details:\n') + JSON.stringify(error.details));
           }
+          process.exit(1);
         } else {
           throw error;
         }
       }
     }
   }
+  console.log('Command unsupported, please use one of: ' + Commands.map(cmd => cmd.name).join(', '));
+  process.exit(1);
 };
 
 run()
