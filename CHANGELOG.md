@@ -1,3 +1,7 @@
+# 0.1.1
+
+* [FIX] Improved support for running android-emulator: fatal error handling, x64 support
+
 # 0.1.0
 
 * [NEW] Added android-emulator command that creates AVD and launches it.

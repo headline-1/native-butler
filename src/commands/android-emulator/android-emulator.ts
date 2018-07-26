@@ -17,10 +17,10 @@ const ANDROID_HOME_DEFAULTS = [
 export const androidEmulator = createCommand(
   TAG,
   {
-    defaultDevice: 'pixel',
+    defaultDevice: 'nexus_6p',
     defaultSdk: '27',
     defaultAbi: 'x86',
-    defaultTarget: 'google_apis_playstore',
+    defaultTarget: 'google_apis',
     timeout: 30000,
   },
   async ({ config, args }) => {

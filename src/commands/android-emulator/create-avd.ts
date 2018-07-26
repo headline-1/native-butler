@@ -109,9 +109,14 @@ export const createAvd = async (params: CreateAvdParams): Promise<string> => {
     }
 
     const configPath = path.join(deviceDirectory, 'config.ini');
-    const configFile = await readFile(configPath) + replaceVariables(configurationTemplate, {
-      device, deviceSkinsDirectory,
-    });
+    const configFile = (
+      await readFile(configPath)
+      + replaceVariables(configurationTemplate, {
+        device, deviceSkinsDirectory,
+      })
+    )
+      .trim()
+      .replace(/\n\n/g, '\n');
     await writeFile(configPath, configFile);
   } else {
     console.log(`${TAG}: ${deviceName} avd already exists`);
