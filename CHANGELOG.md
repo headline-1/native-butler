@@ -1,3 +1,7 @@
+# 0.1.2
+
+* [FIX] Build script fix - PR=false flag should trigger proper deployment builds now (instead of doing the opposite)
+
 # 0.1.1
 
 * [FIX] Improved support for running android-emulator: fatal error handling, x64 support

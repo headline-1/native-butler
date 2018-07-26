@@ -77,7 +77,7 @@ export const build = createCommand(
       );
     };
 
-    const type = (isPR === 'true' && config.branches[branch]) || config.branches['!default'];
+    const type = (isPR === 'false' && config.branches[branch]) || config.branches['!default'];
     const commands = processCommands(config.commands[type] || config.commands['!default']);
     const environment = {
       PLATFORM: platform,
