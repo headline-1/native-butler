@@ -1,3 +1,11 @@
+# 0.2.0
+
+* [IMP] Changelog does write it's output right to file 
+
+# 0.1.4
+
+* [FIX] Encryption always uses binary mode
+
 # 0.1.3
 
 * [FIX] Return proper error code if something goes wrong

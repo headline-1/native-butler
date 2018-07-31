@@ -29,7 +29,7 @@ export const keys = createCommand(
     }
 
     const key = crypto.createHash('md5').update(password, 'utf8').digest('hex').toUpperCase();
-    const sourceEncoding = 'utf8';
+    const sourceEncoding = 'binary';
     const encryptionEncoding = 'base64';
 
     const encrypt = async (path: string) => {

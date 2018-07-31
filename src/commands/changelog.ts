@@ -1,6 +1,6 @@
 import { createCommand } from '../command';
-
-const { readFile } = require('../utils/file');
+import { assertProperty } from '../utils/args';
+import { readFile, writeFile } from '../utils/file';
 
 export const changelog = createCommand(
   'changelog',
@@ -8,9 +8,14 @@ export const changelog = createCommand(
     maxLength: 500,
     muchMoreText: '* and much more!',
     devImpText: '* Code optimization and improvements',
+    source: './CHANGELOG.md',
+    output: './changes.txt',
   },
   async ({ args, config }) => {
-    const changelog = await readFile('./CHANGELOG.md');
+    assertProperty(config, 'source', 'string');
+    assertProperty(config, 'output', 'string');
+
+    const changelog = await readFile(config.source);
     const splittedChangelog = changelog.match(/# Version .+\n(?:\s|\S)*?(?=# Version|$)/g)
       .map((entry) => {
         const version = entry.match(/# Version (.+)/)[1];
@@ -69,5 +74,6 @@ export const changelog = createCommand(
     };
 
     console.log(stringifyChanges(changes));
+    await writeFile(config.output, stringifyChanges(changes));
   }
 );
