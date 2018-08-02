@@ -1,3 +1,7 @@
+# 0.2.1
+
+* [IMP] Android emulator is now created with hardware keyboard support by default
+
 # 0.2.0
 
 * [IMP] Changelog does write it's output right to file 

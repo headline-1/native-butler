@@ -35,6 +35,7 @@ skin.name={selectedDevice}
 skin.path={deviceSkinsDirectory}
 hw.gpu.enabled=yes
 hw.gpu.mode=auto
+hw.keyboard=yes
 hw.ramSize=1536
 `;
 
