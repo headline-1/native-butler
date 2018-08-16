@@ -1,3 +1,8 @@
+# 0.3.0
+
+* [IMP] Big action refactoring, introducing structure that allows for documentation generation
+* [IMP] Added missing support libraries to the Android's Gradle patch list
+
 # 0.2.1
 
 * [IMP] Android emulator is now created with hardware keyboard support by default

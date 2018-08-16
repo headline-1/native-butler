@@ -1,27 +1,57 @@
 import * as crypto from 'crypto';
 import * as path from 'path';
-import { createCommand } from '../command';
-import { assertProperty } from '../utils/args';
+import { CommandBuilder } from '../command';
 import { readDir, readFile, writeFile } from '../utils/file';
 
-export const keys = createCommand(
-  'keys',
-  {
+const TAG = 'keys';
+
+interface Config {
+  passwordEnvVar: string;
+  extensions: string[];
+  directory: string;
+  encryption: string;
+  encryptedExtension: string;
+}
+
+export const keys = new CommandBuilder<Config>()
+  .name(TAG)
+  .description(
+    'Encrypts and decrypts private keys, so they can be stored in repository. ' +
+    'The repository though *has to* be private'
+  )
+  .syntax('keys:{decrypt|encrypt}')
+  .defaultConfig({
     passwordEnvVar: 'ENCRYPTION_PASSWORD',
     extensions: ['keystore', 'json', 'cer', 'p12', 'mobileprovision'],
     directory: 'keys',
     encryption: 'aes-256-cbc',
     encryptedExtension: '.enc',
-  },
-  async ({ commandParams, config }) => {
+  })
+  .params([
+    { type: 'string', required: true, description: 'Action to perform: decrypt or encrypt' },
+  ])
+  .config({
+    passwordEnvVar: {
+      type: 'string',
+      required: true,
+      description: 'Name of the environmental variable that contains the encryption password',
+    },
+    extensions: {
+      type: 'string[]',
+      required: true,
+      description: 'Array of extensions of files that have to be encrypted',
+    },
+    directory: {
+      type: 'string',
+      required: true,
+      description: 'Directory to store both encrypted and unencrypted keys',
+    },
+    encryption: { type: 'string', required: true, description: 'Encryption algorithm used to encrypt the files' },
+    encryptedExtension: { type: /^\..+$/, required: true, description: 'Extension appended to encrypted files' },
+  })
+  .execute(async ({ commandParams, config }) => {
     const [action] = commandParams;
     const { passwordEnvVar, extensions, directory, encryption, encryptedExtension } = config;
-
-    assertProperty(config, 'passwordEnvVar', 'string');
-    assertProperty(config, 'extensions', 'string[]');
-    assertProperty(config, 'directory', 'string');
-    assertProperty(config, 'encryption', 'string');
-    assertProperty(config, 'encryptedExtension', /^\..+$/);
 
     const password = process.env[passwordEnvVar];
     if (!password) {
@@ -92,5 +122,5 @@ export const keys = createCommand(
         );
         break;
     }
-  }
-);
+  })
+  .build();

@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { createCommand } from '../command';
+import { CommandBuilder } from '../command';
 import { replaceVariables } from '../utils/args';
 import { ButlerError } from '../utils/butler-error';
 import { execAndLog } from '../utils/execute';
@@ -7,44 +7,65 @@ import { execAndLog } from '../utils/execute';
 const MAX_COMMAND_DEPTH = 32;
 const TAG = 'build';
 
-export const build = createCommand(
-  TAG,
-  {
-    branches: {
-      '!default': 'test',
+interface Config {
+  buildTypes: Record<string, string>;
+  commands: Record<string, string | string[]>;
+}
+
+interface Arguments {
+  pr: string;
+  branch: string;
+  platform: string;
+}
+
+export const build = new CommandBuilder<Config, Arguments>()
+  .name(TAG)
+  .config({
+    buildTypes: {
+      type: 'object',
+      required: false,
+      description: '',
+    },
+    commands: {
+      type: 'object',
+      required: false,
+      description: 'Commands that are executed for specific `buildTypes`. ' +
+        'Each command can be a simple bash command to execute or an array of multiple commands. ' +
+        'Commands can also point to other commands, i.e. "!myCommand" will point to a command named "myCommand"',
+    },
+  })
+  .defaultConfig({
+    buildTypes: {
+      default: 'test',
       master: 'production',
       staging: 'staging',
       develop: 'development',
     },
     commands: {},
-  },
-  async ({ commandParams, config, args }) => {
-    const isPR = args['pull-request'];
-    if (commandParams.length < 2 || isPR === undefined) {
-      throw new ButlerError(
-        TAG,
-        'expected 2 command params and argument',
-        {
-          syntax: 'build:{PLATFORM}:{BRANCH} --pull-request={IS_PR}',
-          example: 'build:ios:develop --pull-request=true',
-        }
-      );
-    }
-    const [platform, branch] = commandParams;
-    if (!platform) {
-      throw new ButlerError(TAG, 'platform command param is not specified', { commandParams });
-    }
-    if (!branch) {
-      throw new ButlerError(TAG, 'branch command param is not specified', { commandParams });
-    }
-    if (!config.branches) {
-      throw new ButlerError(TAG, 'branches object is missing from configuration', { config });
-    }
-    if (!config.commands) {
-      throw new ButlerError(TAG, 'commands object is missing from configuration', { config });
-    }
-    if (!config.branches['!default']) {
-      config.branches['!default'] = 'test';
+  })
+  .args({
+    pr: {
+      type: ['true', 'false'],
+      required: true,
+      description: 'Flag determining if the build is a pull request build. ' +
+        'PR builds always resolve to `default` build type so that they won\'t trigger any deployment.',
+    },
+    branch: {
+      type: 'string',
+      required: true,
+      description: 'Current branch. This is used to infer the correct buildType.',
+    },
+    platform: {
+      type: ['ios', 'android'],
+      required: true,
+      description: 'A target platform to build for. This can be later used in commands.',
+    },
+  })
+  .execute(async ({ config, args }) => {
+    const { pr, branch, platform } = args;
+
+    if (!config.buildTypes.default) {
+      config.buildTypes.default = 'test';
     }
 
     const processCommands = (command: any, depth = 0): string[] => {
@@ -77,13 +98,13 @@ export const build = createCommand(
       );
     };
 
-    const type = (isPR === 'false' && config.branches[branch]) || config.branches['!default'];
-    const commands = processCommands(config.commands[type] || config.commands['!default']);
+    const type = (pr === 'false' && config.buildTypes[branch]) || config.buildTypes.default;
+    const commands = processCommands(config.commands[type] || config.commands.default);
     const environment = {
       PLATFORM: platform,
       BUILD_TYPE: type,
       BRANCH: branch,
-      IS_PR: isPR,
+      IS_PR: pr,
     };
 
     const executeCommand = async (command: string) => {
@@ -100,5 +121,5 @@ export const build = createCommand(
     for (const command of commands) {
       await executeCommand(command);
     }
-  }
-);
+  })
+  .build();

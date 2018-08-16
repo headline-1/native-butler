@@ -1,20 +1,63 @@
-import { createCommand } from '../command';
-import { assertProperty } from '../utils/args';
+import { CommandBuilder } from '../command';
 import { readFile, writeFile } from '../utils/file';
 
-export const changelog = createCommand(
-  'changelog',
-  {
+const TAG = 'changelog';
+
+interface Config {
+  maxLength: number;
+  muchMoreText: string;
+  devImpText: string;
+  source: string;
+  output: string;
+}
+
+interface Args {
+  entry: string;
+  public: string;
+  version: string;
+  since: string;
+}
+
+export const changelog = new CommandBuilder<Config, Args>()
+  .name(TAG)
+  .defaultConfig({
     maxLength: 500,
     muchMoreText: '* and much more!',
     devImpText: '* Code optimization and improvements',
     source: './CHANGELOG.md',
     output: './changes.txt',
-  },
-  async ({ args, config }) => {
-    assertProperty(config, 'source', 'string');
-    assertProperty(config, 'output', 'string');
-
+  })
+  .args({
+    entry: {
+      type: 'string',
+      description: 'The other way to specify version, ' +
+        'this is the entry number since the latest changelog entry, ' +
+        'i.e. for current version specify 0 and for changelog from 2 versions ago - 2',
+    },
+    public: {
+      type: 'flag',
+      description: 'Defines whether the changelog is public - ' +
+        'all [DEV] entries will be removed and the result will be trimmed to maxLength defined in config',
+    },
+    version: {
+      type: 'string',
+      description: 'The current version, for which the changelog will be collected; ' +
+        'to specify the range use "since" argument.',
+    },
+    since: { type: 'string', description: 'The version since which the changelog will be collected' },
+  })
+  .config({
+    maxLength: { type: 'number', description: 'Max allowed changelog\'s length in characters.' },
+    devImpText: { type: 'string', description: 'A stub to replace all [DEV]-tagged changelog entries when ' },
+    muchMoreText: {
+      type: 'string',
+      description: 'A stub to replace meaningful (non-[DEV]-tagged) changelog entries ' +
+        'when the character limit is exceeded',
+    },
+    source: { type: 'string', description: 'A path to input changelog file.' },
+    output: { type: 'string', description: 'A path to output, formatted changelog file.' },
+  })
+  .execute(async ({ args, config }) => {
     const changelog = await readFile(config.source);
     const splittedChangelog = changelog.match(/# Version .+\n(?:\s|\S)*?(?=# Version|$)/g)
       .map((entry) => {
@@ -25,9 +68,8 @@ export const changelog = createCommand(
         return { version, description, changes };
       });
 
-    const isPublic = args.public;
-    const version = args.version;
-    const sinceVersion = args['since-version'];
+    const { public: isPublic, version, since: sinceVersion } = args;
+
     const entry = (
       version
         ? splittedChangelog.findIndex(entry => entry.version === version)
@@ -75,5 +117,5 @@ export const changelog = createCommand(
 
     console.log(stringifyChanges(changes));
     await writeFile(config.output, stringifyChanges(changes));
-  }
-);
+  })
+  .build();

@@ -1,4 +1,4 @@
-import { createCommand } from '../command';
+import { CommandBuilder } from '../command';
 import { assertProperty } from '../utils/args';
 import { copy, copyFile, exists, glob, readFile, remove, writeFile } from '../utils/file';
 
@@ -9,6 +9,14 @@ interface AndroidPatchOptions {
   appcompatVersion: string;
   gradleVersion: string;
 }
+
+interface Config {
+  gradlePatchOptions?: AndroidPatchOptions;
+  remove: string[];
+  copy: { from: string, to: string, file?: boolean }[];
+}
+
+const TAG = 'patch';
 
 const forceAndroidBuildVersions = async (filePath: string, options: AndroidPatchOptions) => {
   let file = await readFile(filePath);
@@ -30,6 +38,8 @@ const forceAndroidBuildVersions = async (filePath: string, options: AndroidPatch
     'com.android.support:exifinterface',
     'com.android.support:animated-vector-drawable',
     'com.android.support:support-media-compat',
+    'com.android.support:support-annotations',
+    'com.android.support:support-v4',
   ];
 
   const supportPackagesRegex = new RegExp(`((?:compile|compileOnly|implementation|api)\\s+["'](?:${
@@ -57,66 +67,75 @@ const forceAndroidBuildVersions = async (filePath: string, options: AndroidPatch
   await writeFile(filePath, file);
 };
 
-export const patch = createCommand(
-  'patch',
-  {
-    gradlePatchOptions: undefined,
-    remove: [],
-    copy: [],
-  },
-  async ({ config }) => {
-    if (config.remove && config.remove.length > 0) {
-      for (const path of config.remove) {
-        if (typeof path !== 'string' || path.match(/(\.\.[\/\\]|[\/\\]\.\.)/)) {
-          throw new Error('removeModules should contain array of paths that don\'t ' +
-            'refer to directories above current working directory level: ' + JSON.stringify(module));
-        }
-        console.log('Remove: ' + path);
-        await remove(path);
-      }
-    }
-
-    if (config.copy && config.copy.length > 0) {
-      for (const file of config.copy) {
-        if (typeof file !== 'object' || typeof file.from !== 'string' || typeof file.to !== 'string') {
-          throw new Error('copy should contain objects with "from" and "to" ' +
-            'fields containing source and destination paths that don\'t ' +
-            'refer to directories above current working directory level: ' + JSON.stringify(file));
-        }
-        console.log(`Copy: ${file.from} to ${file.to}`);
-        if (file.file) {
-          await copyFile(file.from, file.to);
-        } else {
-          await copy(file.from, file.to);
+export const patch = new CommandBuilder<Config>()
+  .name(TAG)
+  .description('Mainly patches node_modules, because some of dependencies may require overriding parts of it.' +
+    ' Also allows to set a single SDK version for Android dependencies and project.')
+  .defaultConfig(
+    {
+      gradlePatchOptions: undefined,
+      remove: [],
+      copy: [],
+    })
+  .config({
+    gradlePatchOptions: { type: 'object', description: 'Android build.gradle patching options' },
+    remove: { type: 'string[]', description: 'Files or folders to remove from project directory' },
+    copy: { type: 'object[]', description: 'Files or folders to copy (i.e. from project directory to node_modules' },
+  })
+  .execute(async ({ config }) => {
+      if (config.remove && config.remove.length > 0) {
+        for (const path of config.remove) {
+          if (typeof path !== 'string' || path.match(/(\.\.[\/\\]|[\/\\]\.\.)/)) {
+            throw new Error('removeModules should contain array of paths that don\'t ' +
+              'refer to directories above current working directory level: ' + JSON.stringify(module));
+          }
+          console.log('Remove: ' + path);
+          await remove(path);
         }
       }
+
+      if (config.copy && config.copy.length > 0) {
+        for (const file of config.copy) {
+          if (typeof file !== 'object' || typeof file.from !== 'string' || typeof file.to !== 'string') {
+            throw new Error('copy should contain objects with "from" and "to" ' +
+              'fields containing source and destination paths that don\'t ' +
+              'refer to directories above current working directory level: ' + JSON.stringify(file));
+          }
+          console.log(`Copy: ${file.from} to ${file.to}`);
+          if (file.file) {
+            await copyFile(file.from, file.to);
+          } else {
+            await copy(file.from, file.to);
+          }
+        }
+      }
+
+      if (await exists('./patches')) {
+        console.log('Patching overridden modules...');
+        await copy('./patches/**', './node_modules');
+      }
+
+      if (config.gradlePatchOptions) {
+        const patchOptions: AndroidPatchOptions = config.gradlePatchOptions;
+        console.log('Patching Android gradle files...');
+
+        const versionString = /^\d+\.\d+\.\d+$/;
+
+        assertProperty(config, 'gradlePatchOptions.compileSdkVersion', 'number');
+        assertProperty(config, 'gradlePatchOptions.buildToolsVersion', versionString);
+        assertProperty(config, 'gradlePatchOptions.targetSdkVersion', 'number');
+        assertProperty(config, 'gradlePatchOptions.appcompatVersion', versionString);
+        assertProperty(config, 'gradlePatchOptions.gradleVersion', versionString);
+
+        await Promise.all([
+          ...await glob('./node_modules/**/build.gradle'),
+          './android/build.gradle',
+          './android/app/build.gradle',
+        ].map((filePath: string) => {
+          console.log(`Patching: ${filePath}`);
+          return forceAndroidBuildVersions(filePath, patchOptions);
+        }));
+      }
     }
-
-    if (await exists('./patches')) {
-      console.log('Patching overridden modules...');
-      await copy('./patches/**', './node_modules');
-    }
-
-    if (config.gradlePatchOptions) {
-      const patchOptions: AndroidPatchOptions = config.gradlePatchOptions;
-      console.log('Patching Android gradle files...');
-
-      const versionString = /^\d+\.\d+\.\d+$/;
-
-      assertProperty(config, 'gradlePatchOptions.compileSdkVersion', 'number');
-      assertProperty(config, 'gradlePatchOptions.buildToolsVersion', versionString);
-      assertProperty(config, 'gradlePatchOptions.targetSdkVersion', 'number');
-      assertProperty(config, 'gradlePatchOptions.appcompatVersion', versionString);
-      assertProperty(config, 'gradlePatchOptions.gradleVersion', versionString);
-
-      await Promise.all([
-        ...await glob('./node_modules/**/build.gradle'),
-        './android/build.gradle',
-        './android/app/build.gradle',
-      ].map((filePath: string) => {
-        console.log(`Patching: ${filePath}`);
-        return forceAndroidBuildVersions(filePath, patchOptions);
-      }));
-    }
-  }
-);
+  )
+  .build();
