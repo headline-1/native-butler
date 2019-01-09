@@ -6,8 +6,11 @@ const outputPath = path.resolve('./dist');
 module.exports = {
   mode: 'production',
   target: 'node',
+  optimization: {
+    minimize: false,
+  },
   node: {
-    __dirname: true
+    __dirname: false
   },
   devtool: 'source-map',
   entry: './src/index.ts',

@@ -36,7 +36,11 @@ export const createAvd = async (params: CreateAvdParams): Promise<string> => {
   const deviceDirectory = path.join(androidHome, './devices/', deviceName);
   const skinsDirectory = path.join(androidHome, 'skins');
   const deviceSkinsDirectory = path.join(skinsDirectory, device);
-  const sourceSkinsDirectory = path.resolve(__dirname, '../../../assets/skins');
+  const sourceSkinsDirectory = path.resolve(__dirname, '../assets/skins');
+
+  const details = {
+    deviceName, deviceId, deviceDirectory, skinsDirectory, deviceSkinsDirectory, sourceSkinsDirectory,
+  };
 
   const avdManager = path.join(androidHome, './tools/bin/avdmanager');
   if (!await exists(avdManager)) {
@@ -56,6 +60,13 @@ export const createAvd = async (params: CreateAvdParams): Promise<string> => {
   }
 
   if (!await exists(deviceSkinsDirectory)) {
+    if (!await exists(sourceSkinsDirectory)) {
+      throw new ButlerError(
+        TAG,
+        'source skins directory does not exist - your environment isn\'t configured properly',
+        details
+      );
+    }
     throw new ButlerError(
       TAG,
       'there are no skins available for selected device, please choose one of available devices',
@@ -79,7 +90,7 @@ export const createAvd = async (params: CreateAvdParams): Promise<string> => {
       throw new ButlerError(
         TAG,
         'avd creation failure: ' + error.message,
-        { command, params }
+        { command, params, details }
       );
     }
 

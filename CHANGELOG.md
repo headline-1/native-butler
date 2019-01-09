@@ -1,3 +1,6 @@
+# 0.3.4
+* [FIX] Fixed __dirname Webpack issue
+
 # 0.3.0
 
 * [IMP] Big action refactoring, introducing structure that allows for documentation generation
