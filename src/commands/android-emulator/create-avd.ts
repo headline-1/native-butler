@@ -67,11 +67,15 @@ export const createAvd = async (params: CreateAvdParams): Promise<string> => {
         details
       );
     }
-    throw new ButlerError(
-      TAG,
-      'there are no skins available for selected device, please choose one of available devices',
-      { supportedSkins: await readDir(sourceSkinsDirectory) }
-    );
+    console.log(`${TAG}: copying bundled skins to Android SDK directory`);
+    await copy(sourceSkinsDirectory, skinsDirectory);
+    if (!await exists(deviceSkinsDirectory)) {
+      throw new ButlerError(
+        TAG,
+        'there are no skins available for selected device, please choose one of available devices',
+        { supportedSkins: await readDir(sourceSkinsDirectory) }
+      );
+    }
   }
 
   if (!await exists(deviceDirectory)) {
@@ -92,11 +96,6 @@ export const createAvd = async (params: CreateAvdParams): Promise<string> => {
         'avd creation failure: ' + error.message,
         { command, params, details }
       );
-    }
-
-    if (!await exists(deviceSkinsDirectory)) {
-      console.log(`${TAG}: copying bundled skins to Android SDK directory`);
-      await copy(sourceSkinsDirectory, skinsDirectory);
     }
 
     const configPath = path.join(deviceDirectory, 'config.ini');
