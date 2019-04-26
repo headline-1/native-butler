@@ -43,6 +43,7 @@ export const createAvd = async (params: CreateAvdParams): Promise<string> => {
   };
 
   const avdManager = path.join(androidHome, './tools/bin/avdmanager');
+  const sdkManager = path.join(androidHome, './tools/bin/sdkmanager');
   if (!await exists(avdManager)) {
     throw new ButlerError(
       TAG,
@@ -78,25 +79,35 @@ export const createAvd = async (params: CreateAvdParams): Promise<string> => {
     }
   }
 
-  if (!await exists(deviceDirectory)) {
-    console.log(`${TAG}: avd does not exist yet, creating "${deviceName}"`);
-    const command = `${avdManager} --silent create avd \
-          --force \
-          --name ${deviceName} \
-          --package "system-images;android-${sdk};${target};${abi}" \
-          --tag "${target}" \
-          --device ${deviceIds[device]} \
-          --path ${deviceDirectory} \
-      `;
+  const packageName = `system-images;android-${sdk};${target};${abi}`;
+
+  const call = async (command: string, errorMessage: string) => {
     try {
       await execAndLog(command);
     } catch (error) {
       throw new ButlerError(
         TAG,
-        'avd creation failure: ' + error.message,
+        `${errorMessage}: ${error.message}`,
         { command, params, details }
       );
     }
+  };
+
+  if (!await exists(deviceDirectory)) {
+    console.log(`${TAG}: avd does not exist yet, creating "${deviceName}..."`);
+
+    console.log(`${TAG}: assuring that the package "${packageName}" exists...`);
+    await call(`${sdkManager} --install '${packageName}'`, 'package installation failure');
+
+    console.log(`${TAG}: creating the Android Virtual Device...`);
+    await call(`${avdManager} --silent create avd \
+        --force \
+        --name ${deviceName} \
+        --package "${packageName}" \
+        --tag "${target}" \
+        --device ${deviceIds[device]} \
+        --path ${deviceDirectory} \
+    `, 'avd creation failure');
 
     const configPath = path.join(deviceDirectory, 'config.ini');
     const configFile = (
